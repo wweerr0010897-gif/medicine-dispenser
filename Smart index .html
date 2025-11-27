@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Medicine Dispenser</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', 'Sarabun', sans-serif;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 135, 100, 0.1);
+        }
+        
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(20, 83, 45, 0.15);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Modern Card Style */
+        .medicine-card-modern {
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        .medicine-card-modern:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .glass-input {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.85);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.3);
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.15);
+            color: #1a5d1a;
+        }
+
+        .hidden-page {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .cursor-pointer-hover {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cursor-pointer-hover:hover {
+            transform: scale(1.05);
+        }
+        
+        .tab-active {
+            background-color: #0d9488 !important; /* teal-600 */
+            color: white !important;
+        }
+
+        /* Edit Form Styles */
+        .edit-label {
+            font-size: 0.85rem;
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+            display: block;
+            font-weight: 500;
+        }
+        .edit-field {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            background-color: rgba(255, 255, 255, 0.7);
+            transition: all 0.2s;
+        }
+        .edit-field:focus {
+            outline: none;
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen w-full overflow-hidden">
+
+    <!-- Background Image -->
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=2000&auto=format&fit=crop" 
+             alt="Pharmacy Background" 
+             class="h-full w-full object-cover object-center blur-[3px]"
+             onerror="this.src='https://placehold.co/1920x1080/e0f2f1/00695c?text=Medical+Background'">
+    </div>
+    <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#d1fae5] via-[#ecfdf5]/60 to-transparent"></div>
+
+    <!-- VIEW 1: LOGIN PAGE -->
+    <div id="login-view" class="relative z-10 flex h-full w-full flex-col items-center justify-center px-6 md:flex-row md:justify-around lg:px-20 fade-in">
+        <div class="mb-12 text-center md:mb-0 flex flex-col items-center animate-fade-in-up max-w-lg">
+            <h1 class="text-6xl font-bold tracking-tight text-[#14532d] drop-shadow-sm md:text-7xl lg:text-8xl">WELCOME</h1>
+            <div class="mt-4 text-xl font-medium text-[#166534] opacity-80 flex flex-col items-center">
+                <span>ระบบกล่องจ่ายยาอัจฉริยะ</span>
+                <br>
+                <span class="text-lg block max-w-md leading-relaxed">ระบบที่ถูกพัฒนาเพื่อให้การรับยาบรรเทาอาการป่วย<br>เป็นเรื่องง่าย ปลอดภัย และสะดวกยิ่งขึ้น</span>
+            </div>
+        </div>
+        <div class="w-full max-w-sm sm:max-w-md">
+            <div class="glass-panel rounded-[2rem] p-8 md:p-10 relative overflow-hidden">
+                <div class="absolute -top-6 -right-6 text-green-100 opacity-30 text-9xl"><i class="fa-solid fa-plus"></i></div>
+                <div class="relative z-10 text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/40 mb-3 text-[#14532d]"><i class="fa-solid fa-pills text-xl"></i></div>
+                    <h2 class="text-3xl font-medium tracking-wide text-[#14532d] opacity-90">Log in</h2>
+                </div>
+                <form id="login-form" class="space-y-5 relative z-10">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <i class="fa-solid fa-user-doctor text-teal-700/60 text-lg"></i>
+                        </div>
+                        <input type="text" id="username" placeholder="Medical ID / Username" 
+                               class="glass-input w-full rounded-xl py-4 pl-12 pr-4 text-gray-800 placeholder-teal-800/50 shadow-sm" required>
+                    </div>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <i class="fa-solid fa-lock text-teal-700/60 text-lg"></i>
+                        </div>
+                        <input type="password" id="password" placeholder="Password" 
+                               class="glass-input w-full rounded-xl py-4 pl-12 pr-4 text-gray-800 placeholder-teal-800/50 shadow-sm" required>
+                    </div>
+                    
+                    <div class="h-2"></div>
+                    <button type="submit" class="glass-btn w-full rounded-xl py-3 text-xl font-medium text-[#14532d] shadow-sm flex items-center justify-center gap-2 group"><span>Log in</span><i class="fa-solid fa-arrow-right text-sm opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all"></i></button>
+                </form>
+                <div class="mt-8 flex flex-col items-center justify-center gap-3"><p class="text-sm font-medium text-black text-center">มหาวิทยาลัยเทคโนโลยีราชมงคลล้านนา เชียงใหม่</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: DASHBOARD PAGE -->
+    <div id="dashboard-view" class="relative z-20 h-full w-full flex flex-col hidden-page fade-in">
+        <header class="glass-header w-full px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 bg-gradient-to-br from-[#14532d] to-teal-600 rounded-full flex items-center justify-center shadow-lg text-white border-2 border-green-100 ring-2 ring-white/50"><i class="fa-solid fa-pills text-xl animate-pulse"></i></div>
+                <span class="text-[#14532d] font-bold text-base md:text-xl tracking-wide">ระบบกล่องจ่ายยาอัจฉริยะ</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:block text-right"><h3 class="text-xs text-gray-600 font-medium">เข้าสู่ระบบโดย</h3><p class="text-[#14532d] font-bold text-base leading-tight">คุณชนาภัทร พัฒนสิงห์</p></div>
+                <div id="profile-trigger" class="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 border border-teal-200 shadow-sm cursor-pointer-hover transition-transform hover:scale-110 hover:bg-teal-200" title="ดูข้อมูลแอดมิน"><i class="fa-solid fa-user-circle text-2xl"></i></div>
+                
+                <!-- Logout Button: Changed to RED color as requested -->
+                <button id="logout-btn" class="ml-2 text-red-600 hover:text-red-700 transition-colors p-2 rounded-full hover:bg-red-50" title="ออกจากระบบ">
+                    <i class="fa-solid fa-right-from-bracket text-2xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
+            <div class="max-w-7xl mx-auto">
+                <div class="md:hidden mb-6 p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/50"><p class="text-gray-600 text-sm">ยินดีต้อนรับ,</p><p class="text-[#14532d] font-bold text-xl">คุณชนาภัทร พัฒนสิงห์</p></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="glass-card rounded-2xl p-6 flex items-center gap-4"><div class="h-14 w-14 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl shadow-sm"><i class="fa-solid fa-wifi"></i></div><div><p class="text-gray-500 text-sm">สถานะอุปกรณ์</p><p class="text-xl font-bold text-gray-800">เชื่อมต่อแล้ว</p><div class="flex items-center gap-1 mt-1"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span><p class="text-xs text-green-600 font-medium">Online</p></div></div></div>
+                    <div class="glass-card rounded-2xl p-6 flex items-center gap-4"><div class="h-14 w-14 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-2xl shadow-sm"><i class="fa-solid fa-battery-three-quarters"></i></div><div><p class="text-gray-500 text-sm">แบตเตอรี่สำรอง</p><p class="text-xl font-bold text-gray-800">85%</p><p class="text-xs text-gray-500">ใช้งานได้ปกติ</p></div></div>
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-[#14532d] flex items-center drop-shadow-sm"><i class="fa-solid fa-box-open mr-3 text-teal-600"></i> ช่องจ่ายยา (Medicine Slots)</h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Slot 1 -->
+                    <div onclick="showMedicineDetail('slot1')" class="medicine-card-modern bg-[#f0fdf4] cursor-pointer group" title="ดูรายละเอียด">
+                        <div class="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500"><i class="fa-solid fa-tablets text-8xl text-green-800"></i></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10"><span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-md border border-green-200">SLOT 1</span><div class="text-green-600"><i class="fa-solid fa-chevron-right"></i></div></div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-1 relative z-10" id="dash-name-slot1">Paracetamol</h4><p class="text-sm text-gray-500 mb-8 relative z-10" id="dash-dose-slot1">500 mg (แก้ปวดลดไข้)</p>
+                        <div class="relative z-10 mt-auto"><div class="w-full bg-gray-200/80 rounded-full h-3 mb-2"><div class="bg-green-500 h-3 rounded-full" style="width: 70%"></div></div><p class="text-xs text-gray-500 text-right font-medium">เหลือ <span id="dash-qty-slot1">14</span> <span id="dash-unit-slot1">เม็ด</span></p></div>
+                    </div>
+                    <!-- Slot 2 -->
+                    <div onclick="showMedicineDetail('slot2')" class="medicine-card-modern bg-[#eff6ff] cursor-pointer group" title="ดูรายละเอียด">
+                        <div class="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500"><i class="fa-solid fa-glass-water text-8xl text-blue-800"></i></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10"><span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-md border border-blue-200">SLOT 2</span><div class="text-blue-600"><i class="fa-solid fa-chevron-right"></i></div></div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-1 relative z-10" id="dash-name-slot2">ROYAL-D</h4><p class="text-sm text-gray-500 mb-8 relative z-10" id="dash-dose-slot2">25 g (ผงเกลือแร่)</p>
+                        <div class="relative z-10 mt-auto"><div class="w-full bg-gray-200/80 rounded-full h-3 mb-2"><div class="bg-blue-500 h-3 rounded-full" style="width: 45%"></div></div><p class="text-xs text-gray-500 text-right font-medium">เหลือ <span id="dash-qty-slot2">9</span> <span id="dash-unit-slot2">ซอง <span class="text-red-500 font-bold">(ใกล้หมด)</span></span></p></div>
+                    </div>
+                    <!-- Slot 3 -->
+                    <div onclick="showMedicineDetail('slot3')" class="medicine-card-modern bg-[#fff7ed] cursor-pointer group" title="ดูรายละเอียด">
+                        <div class="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500"><i class="fa-solid fa-bandage text-8xl text-orange-800"></i></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10"><span class="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-md border border-orange-200">SLOT 3</span><div class="text-orange-600"><i class="fa-solid fa-chevron-right"></i></div></div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-1 relative z-10" id="dash-name-slot3">Tensoplast</h4><p class="text-sm text-gray-500 mb-8 relative z-10" id="dash-dose-slot3">พลาสเตอร์ปิดแผล</p>
+                        <div class="relative z-10 mt-auto"><div class="w-full bg-gray-200/80 rounded-full h-3 mb-2"><div class="bg-orange-500 h-3 rounded-full" style="width: 90%"></div></div><p class="text-xs text-gray-500 text-right font-medium">เหลือ <span id="dash-qty-slot3">28</span> <span id="dash-unit-slot3">ชิ้น</span></p></div>
+                    </div>
+                    <!-- Slot 4 -->
+                    <div class="glass-card rounded-[1.5rem] p-6 relative border-dashed border-2 border-gray-300/60 bg-white/10 flex flex-col items-center justify-center min-h-[220px] group opacity-50">
+                        <div class="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 mb-3 shadow-inner"><i class="fa-solid fa-box-open text-2xl"></i></div><p class="text-gray-400 font-medium text-sm">ว่าง (Empty)</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- VIEW 3: ADMIN PROFILE -->
+    <div id="admin-view" class="relative z-20 h-full w-full flex flex-col hidden-page fade-in items-center justify-center">
+        <div class="absolute top-6 left-6 z-30"><button onclick="backToDashboard()" class="glass-btn px-4 py-2 rounded-xl flex items-center gap-2 text-[#14532d] hover:bg-white/90 font-medium"><i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก</button></div>
+        <div class="glass-panel rounded-[2rem] p-10 max-w-md w-full text-center relative mx-4">
+             <div class="relative mx-auto mb-6 w-32 h-32"><div class="w-full h-full rounded-full bg-teal-100 border-4 border-white/50 shadow-lg flex items-center justify-center text-teal-700 overflow-hidden"><i class="fa-solid fa-user-shield text-5xl"></i></div><div class="absolute bottom-0 right-0 bg-green-500 border-4 border-white rounded-full p-2 h-8 w-8 flex items-center justify-center"><i class="fa-solid fa-check text-white text-xs"></i></div></div>
+             <h2 class="text-3xl font-bold text-[#14532d] mb-2">ข้อมูลผู้ดูแลระบบ</h2><div class="h-1 w-20 bg-teal-500/30 mx-auto rounded-full mb-6"></div>
+             <div class="space-y-4 text-left px-4">
+                 <div class="bg-white/40 rounded-xl p-4 border border-white/50"><p class="text-xs text-gray-500 mb-1">ชื่อ - นามสกุล</p><p class="text-lg font-bold text-[#14532d] flex items-center gap-3"><i class="fa-regular fa-id-card text-teal-600"></i> คุณชนาภัทร พัฒนสิงห์</p></div>
+                 <div class="bg-white/40 rounded-xl p-4 border border-white/50"><p class="text-xs text-gray-500 mb-1">สถานะ</p><p class="text-lg font-medium text-[#14532d] flex items-center gap-3"><i class="fa-solid fa-shield-halved text-teal-600"></i> ผู้ดูแลระบบ (Admin)</p></div>
+                 <div class="bg-white/40 rounded-xl p-4 border border-white/50"><p class="text-xs text-gray-500 mb-1">เข้าสู่ระบบเมื่อเวลา</p><p id="login-time-display" class="text-lg font-medium text-[#14532d] flex items-center gap-3"><i class="fa-regular fa-clock text-teal-600"></i> --:-- น.</p></div>
+                 <!-- User Stats Button -->
+                 <div onclick="goToUserStats()" class="bg-teal-50 rounded-xl p-4 border border-teal-200 cursor-pointer hover:bg-teal-100 transition-colors group">
+                     <p class="text-xs text-teal-600 mb-1 group-hover:text-teal-800">เพิ่มเติม</p>
+                     <p class="text-lg font-bold text-[#14532d] flex items-center justify-between"><span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie text-teal-600"></i> ดูสถิติผู้เข้าใช้งาน</span><i class="fa-solid fa-chevron-right text-sm"></i></p>
+                 </div>
+             </div>
+        </div>
+    </div>
+
+    <!-- VIEW 4: MEDICINE DETAIL PAGE -->
+    <div id="medicine-detail-view" class="relative z-20 h-full w-full flex flex-col hidden-page fade-in">
+        <header class="glass-header w-full px-6 py-4 flex items-center gap-4"><button onclick="backToDashboardFromDetail()" class="text-[#14532d] hover:bg-white/50 p-2 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button><h1 class="text-xl font-bold text-[#14532d]">ข้อมูลยา (Medicine Info)</h1></header>
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
+            <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+                <div class="w-full lg:w-1/3">
+                    <div class="glass-panel rounded-[2rem] p-8 relative">
+                         <!-- Edit Button (Navigates to Edit Page) -->
+                         <button onclick="goToEditPage()" class="absolute top-6 right-6 p-2 w-10 h-10 rounded-full bg-amber-50 text-amber-500 hover:bg-amber-100 hover:scale-110 transition-all shadow-sm flex items-center justify-center" title="แก้ไขข้อมูล">
+                            <i class="fa-solid fa-pen"></i>
+                         </button>
+
+                         <div class="flex justify-center mb-6"><div id="detail-icon-container" class="h-32 w-32 rounded-full bg-teal-50 border-4 border-white shadow-md flex items-center justify-center text-teal-600"><i id="detail-icon" class="fa-solid fa-tablets text-6xl"></i></div></div>
+                         
+                         <h2 id="detail-name" class="text-3xl font-bold text-[#14532d] text-center mb-1">Name</h2>
+                         <p id="detail-dose" class="text-center text-gray-500 mb-6">Dose</p>
+
+                         <!-- Current Stock Display with Button to Stock Page -->
+                         <div class="bg-white/60 rounded-2xl p-4 mb-6 border border-white/60 flex items-center justify-between">
+                             <div>
+                                 <p class="text-xs text-gray-500">คงเหลือปัจจุบัน</p>
+                                 <p class="text-2xl font-bold text-gray-800"><span id="detail-qty-display-only">14</span> <span id="detail-unit-display-only" class="text-sm font-normal text-gray-500">เม็ด</span></p>
+                             </div>
+                             <button onclick="goToStockPage()" class="glass-btn px-4 py-2 rounded-xl text-teal-700 font-medium text-sm flex items-center gap-2 hover:bg-teal-50">
+                                 <i class="fa-solid fa-boxes-stacked"></i> ปรับจำนวน
+                             </button>
+                         </div>
+
+                         <!-- Info Display -->
+                         <div id="info-view" class="space-y-4">
+                             <div class="bg-white/50 rounded-xl p-4"><p class="text-xs text-gray-500">ยี่ห้อ (Brand)</p><p id="detail-brand" class="font-medium text-gray-800">Brand Name</p></div>
+                             <div class="bg-white/50 rounded-xl p-4"><p class="text-xs text-gray-500">ข้อมูล อย. (FDA)</p><p id="detail-fda" class="font-medium text-gray-800">FDA Number</p></div>
+                             <div class="bg-white/50 rounded-xl p-4"><p class="text-xs text-gray-500">ประเภท (Type)</p><p id="detail-type" class="font-medium text-gray-800">Type Name</p></div>
+                             <div class="bg-white/50 rounded-xl p-4"><p class="text-xs text-gray-500">สรรพคุณ (Properties)</p><p id="detail-prop" class="font-medium text-gray-800">Properties Description</p></div>
+                         </div>
+                    </div>
+                </div>
+                <div class="w-full lg:w-2/3">
+                    <div class="glass-panel rounded-[2rem] p-6 h-full flex flex-col">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4"><h3 class="text-xl font-bold text-[#14532d] flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> สถิติการจ่ายยา (Dispensing Stats)</h3><div class="flex bg-white/50 rounded-lg p-1"><button onclick="updateChart('day')" id="btn-day" class="px-4 py-1.5 rounded-md text-sm font-medium transition-all tab-active">รายวัน</button><button onclick="updateChart('month')" id="btn-month" class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:bg-white/50 transition-all">รายเดือน</button><button onclick="updateChart('year')" id="btn-year" class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:bg-white/50 transition-all">รายปี</button></div></div>
+                        <div class="flex-1 relative min-h-[300px]"><canvas id="dispensingChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- VIEW 5: MEDICINE EDIT PAGE -->
+    <div id="medicine-edit-view" class="relative z-20 h-full w-full flex flex-col hidden-page fade-in">
+        <header class="glass-header w-full px-6 py-4 flex items-center gap-4"><button onclick="backToDetailFromEdit()" class="text-[#14532d] hover:bg-white/50 p-2 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button><h1 class="text-xl font-bold text-[#14532d]">แก้ไขข้อมูลยา (Edit Medicine)</h1></header>
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
+            <div class="max-w-2xl mx-auto">
+                <div class="glass-panel rounded-[2rem] p-8">
+                    <div class="text-center mb-8"><div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 text-amber-600 mb-4"><i class="fa-solid fa-pen-to-square text-3xl"></i></div><h2 class="text-2xl font-bold text-gray-800">แก้ไขรายละเอียด</h2><p class="text-gray-500">กรุณากรอกข้อมูลที่ต้องการแก้ไข</p></div>
+                    <div class="space-y-5">
+                        <div><label class="edit-label">ชื่อยา (Medicine Name)</label><input id="edit-name" type="text" class="edit-field"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div><label class="edit-label">ขนาด/ปริมาณ (Dose)</label><input id="edit-dose" type="text" class="edit-field"></div><div><label class="edit-label">ยี่ห้อ (Brand)</label><input id="edit-brand" type="text" class="edit-field"></div></div>
+                        <div><label class="edit-label">เลข อย. (FDA Number)</label><input id="edit-fda" type="text" class="edit-field"></div><div><label class="edit-label">ประเภท (Type)</label><input id="edit-type" type="text" class="edit-field"></div><div><label class="edit-label">สรรพคุณ (Properties)</label><textarea id="edit-prop" rows="4" class="edit-field resize-none"></textarea></div>
+                        <div class="pt-4"><button onclick="saveMedicineDetails()" class="w-full bg-[#14532d] text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#0f3f21] hover:shadow-xl transition-all flex items-center justify-center gap-3"><i class="fa-solid fa-save"></i> บันทึกข้อมูล</button></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- VIEW 6: MEDICINE STOCK PAGE -->
+    <div id="medicine-stock-view" class="relative z-20 h-full w-full flex flex-col hidden-page fade-in">
+        <header class="glass-header w-full px-6 py-4 flex items-center gap-4"><button onclick="backToDetailFromStock()" class="text-[#14532d] hover:bg-white/50 p-2 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button><h1 class="text-xl font-bold text-[#14532d]">จัดการสต็อก (Manage Stock)</h1></header>
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 flex flex-col items-center justify-center">
+            <div class="glass-panel rounded-[3rem] p-10 max-w-md w-full text-center relative">
+                <h2 id="stock-name" class="text-2xl font-bold text-[#14532d] mb-8">Medicine Name</h2>
+                <div class="flex items-center justify-center gap-8 mb-10"><button onclick="adjustStock(-1)" class="w-24 h-24 rounded-[2rem] bg-[#ffe4e6] text-[#e11d48] flex items-center justify-center text-4xl shadow-md hover:scale-105 hover:bg-[#fecdd3] transition-all active:scale-95"><i class="fa-solid fa-minus"></i></button><div class="text-center flex flex-col w-32"><span class="text-7xl font-bold text-[#1e293b] leading-tight" id="stock-qty-display">14</span><span class="text-gray-500 text-xl mt-2" id="stock-unit-display">เม็ด</span></div><button onclick="adjustStock(1)" class="w-24 h-24 rounded-[2rem] bg-[#d1fae5] text-[#059669] flex items-center justify-center text-4xl shadow-md hover:scale-105 hover:bg-[#a7f3d0] transition-all active:scale-95"><i class="fa-solid fa-plus"></i></button></div>
+                <div class="bg-blue-50 rounded-xl p-4 mb-6 border border-blue-100"><p class="text-blue-800 text-sm"><i class="fa-solid fa-circle-info mr-2"></i>กดปุ่ม + หรือ - เพื่อปรับจำนวนสต็อก</p></div><button onclick="backToDetailFromStock()" class="w-full bg-[#14532d] text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-[#0f3f21] transition-all">เสร็จสิ้น</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- VIEW 7: ADMIN STATS PAGE -->
+    <div id="admin-stats-view" class="relative z-20 h-full w-full flex flex-col hidden-page fade-in">
+        <header class="glass-header w-full px-6 py-4 flex items-center gap-4"><button onclick="backToAdminProfile()" class="text-[#14532d] hover:bg-white/50 p-2 rounded-full transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button><h1 class="text-xl font-bold text-[#14532d]">สถิติผู้เข้าใช้งาน (User Stats)</h1></header>
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
+            <div class="max-w-5xl mx-auto">
+                <div class="glass-panel rounded-[2rem] p-6 h-full flex flex-col">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                        <div class="text-left"><h3 class="text-2xl font-bold text-[#14532d] flex items-center gap-2"><i class="fa-solid fa-users-line"></i> จำนวนผู้เข้าใช้งานระบบ</h3><p class="text-gray-500 text-sm mt-1">แสดงข้อมูลจำนวนครั้งที่มีการ Login เข้าใช้งาน</p></div>
+                        <div class="flex bg-white/50 rounded-lg p-1"><button onclick="updateUserStats('day')" id="btn-user-day" class="px-4 py-1.5 rounded-md text-sm font-medium transition-all tab-active">รายวัน</button><button onclick="updateUserStats('month')" id="btn-user-month" class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:bg-white/50 transition-all">รายเดือน</button><button onclick="updateUserStats('year')" id="btn-user-year" class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:bg-white/50 transition-all">รายปี</button></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-blue-50 rounded-xl p-4 border border-blue-100"><p class="text-blue-600 text-xs font-bold uppercase">วันนี้</p><p class="text-2xl font-bold text-gray-800">42 <span class="text-sm font-normal text-gray-500">ครั้ง</span></p></div>
+                        <div class="bg-teal-50 rounded-xl p-4 border border-teal-100"><p class="text-teal-600 text-xs font-bold uppercase">เดือนนี้</p><p class="text-2xl font-bold text-gray-800">1,240 <span class="text-sm font-normal text-gray-500">ครั้ง</span></p></div>
+                        <div class="bg-purple-50 rounded-xl p-4 border border-purple-100"><p class="text-purple-600 text-xs font-bold uppercase">ปีนี้</p><p class="text-2xl font-bold text-gray-800">15,850 <span class="text-sm font-normal text-gray-500">ครั้ง</span></p></div>
+                    </div>
+                    <div class="flex-1 relative min-h-[400px]"><canvas id="userStatsChart"></canvas></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const adminView = document.getElementById('admin-view');
+        const medicineDetailView = document.getElementById('medicine-detail-view');
+        const medicineEditView = document.getElementById('medicine-edit-view');
+        const medicineStockView = document.getElementById('medicine-stock-view');
+        const adminStatsView = document.getElementById('admin-stats-view');
+        
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const logoutBtn = document.getElementById('logout-btn');
+        const profileTrigger = document.getElementById('profile-trigger');
+        const loginTimeDisplay = document.getElementById('login-time-display');
+
+        let loginTimestamp = "";
+        let myChart = null;
+        let userStatsChart = null;
+        let currentMedicineId = 'slot1';
+
+        const medicines = {
+            'slot1': {
+                name: 'Paracetamol', dose: '500 mg (แก้ปวดลดไข้)', qty: 14, unit: 'เม็ด', brand: 'Sara', fda: '1A 123/45', type: 'ยาสามัญประจำบ้าน', prop: 'แก้ปวด ลดไข้ บรรเทาอาการปวดเล็กน้อยถึงปานกลาง', iconClass: 'fa-tablets', iconColor: 'text-teal-600', bgClass: 'bg-teal-50', borderColor: '#0d9488',
+                stats: { day: { labels: ['08:00', '12:00', '16:00'], data: [2, 3, 4] }, month: { labels: ['Week 1', 'Week 4'], data: [45, 50] }, year: { labels: ['Jan', 'Dec'], data: [120, 300] } }
+            },
+            'slot2': {
+                name: 'ROYAL-D', dose: '25 g (ผงเกลือแร่)', qty: 9, unit: 'ซอง', brand: 'Royal-D', fda: '72-2-00241-1', type: 'อาหารทางการแพทย์/เกลือแร่', prop: 'สำหรับผู้ที่เสียเหงื่อจากการออกกำลังกาย หรือท้องเสีย', iconClass: 'fa-glass-water', iconColor: 'text-blue-600', bgClass: 'bg-blue-50', borderColor: '#2563eb',
+                stats: { day: { labels: ['08:00', '12:00'], data: [5, 8] }, month: { labels: ['Week 1', 'Week 4'], data: [80, 85] }, year: { labels: ['Jan', 'Dec'], data: [200, 400] } }
+            },
+            'slot3': {
+                name: 'Tensoplast', dose: 'พลาสเตอร์ปิดแผล', qty: 28, unit: 'ชิ้น', brand: 'Tensoplast', fda: '65-2-3-2', type: 'เวชภัณฑ์/อุปกรณ์ทำแผล', prop: 'ใช้ปิดแผลเพื่อป้องกันเชื้อโรคและสิ่งสกปรก ช่วยให้แผลหายเร็วขึ้น', iconClass: 'fa-bandage', iconColor: 'text-orange-600', bgClass: 'bg-orange-50', borderColor: '#ea580c',
+                stats: { day: { labels: ['08:00', '12:00'], data: [1, 2] }, month: { labels: ['Week 1', 'Week 4'], data: [20, 18] }, year: { labels: ['Jan', 'Dec'], data: [50, 100] } }
+            }
+        };
+
+        const userStatsData = {
+            day: { labels: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'], data: [5, 12, 18, 14, 20, 8] },
+            month: { labels: ['1-5', '6-10', '11-15', '16-20', '21-25', '26-30'], data: [150, 200, 180, 220, 250, 240] },
+            year: { labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'], data: [1200, 1350, 1400, 1100, 1500, 1600, 1550, 1650, 1700, 1800, 1900, 2000] }
+        };
+
+        // Initialize on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            Object.keys(medicines).forEach(key => updateDashboardCard(key, medicines[key]));
+        });
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " น.";
+        }
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (usernameInput.value.trim() === 'chanaphat_ph66' && passwordInput.value.trim() === '123456') {
+                loginTimestamp = getCurrentTime();
+                loginView.style.opacity = '0';
+                setTimeout(() => {
+                    loginView.classList.add('hidden-page');
+                    dashboardView.classList.remove('hidden-page');
+                }, 300);
+            } else {
+                alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+                passwordInput.value = '';
+            }
+        });
+
+        if(logoutBtn) logoutBtn.addEventListener('click', () => confirm('ต้องการออกจากระบบใช่หรือไม่?') && performLogout());
+
+        function performLogout() {
+            [dashboardView, adminView, medicineDetailView, medicineEditView, medicineStockView, adminStatsView].forEach(el => el.classList.add('hidden-page'));
+            loginView.classList.remove('hidden-page');
+            loginView.style.opacity = '1';
+            passwordInput.value = '';
+        }
+
+        if(profileTrigger) profileTrigger.addEventListener('click', () => {
+            loginTimeDisplay.innerHTML = `<i class="fa-regular fa-clock text-teal-600"></i> ${loginTimestamp}`;
+            dashboardView.classList.add('hidden-page');
+            adminView.classList.remove('hidden-page');
+        });
+
+        function backToDashboard() {
+            [adminView, medicineDetailView, medicineEditView, medicineStockView, adminStatsView].forEach(el => el.classList.add('hidden-page'));
+            dashboardView.classList.remove('hidden-page');
+        }
+        function backToDashboardFromDetail() { backToDashboard(); }
+
+        function showMedicineDetail(medicineId) {
+            if(!medicines[medicineId]) return;
+            currentMedicineId = medicineId;
+            const data = medicines[medicineId];
+            document.getElementById('detail-name').innerText = data.name;
+            document.getElementById('detail-dose').innerText = data.dose;
+            document.getElementById('detail-brand').innerText = data.brand;
+            document.getElementById('detail-fda').innerText = data.fda;
+            document.getElementById('detail-type').innerText = data.type;
+            document.getElementById('detail-prop').innerText = data.prop;
+            let qtyDisplay = data.qty;
+            let unitDisplay = data.unit;
+            if(data.qty <= 10) unitDisplay += ` <span class="text-red-500 font-bold">(ใกล้หมด)</span>`;
+            document.getElementById('detail-qty-display-only').innerText = qtyDisplay;
+            document.getElementById('detail-unit-display-only').innerHTML = unitDisplay;
+            const iconContainer = document.getElementById('detail-icon-container');
+            const iconElement = document.getElementById('detail-icon');
+            iconContainer.className = `h-32 w-32 rounded-full border-4 border-white shadow-md flex items-center justify-center ${data.bgClass} ${data.iconColor}`;
+            iconElement.className = `fa-solid ${data.iconClass} text-6xl`;
+            dashboardView.classList.add('hidden-page');
+            medicineDetailView.classList.remove('hidden-page');
+            initChart(data.borderColor);
+            updateChart('day');
+        }
+
+        function goToEditPage() {
+            const data = medicines[currentMedicineId];
+            document.getElementById('edit-name').value = data.name;
+            document.getElementById('edit-dose').value = data.dose;
+            document.getElementById('edit-brand').value = data.brand;
+            document.getElementById('edit-fda').value = data.fda;
+            document.getElementById('edit-type').value = data.type;
+            document.getElementById('edit-prop').value = data.prop;
+            medicineDetailView.classList.add('hidden-page');
+            medicineEditView.classList.remove('hidden-page');
+        }
+
+        function backToDetailFromEdit() {
+            medicineEditView.classList.add('hidden-page');
+            medicineDetailView.classList.remove('hidden-page');
+        }
+
+        function saveMedicineDetails() {
+            const data = medicines[currentMedicineId];
+            data.name = document.getElementById('edit-name').value;
+            data.dose = document.getElementById('edit-dose').value;
+            data.brand = document.getElementById('edit-brand').value;
+            data.fda = document.getElementById('edit-fda').value;
+            data.type = document.getElementById('edit-type').value;
+            data.prop = document.getElementById('edit-prop').value;
+            updateDashboardCard(currentMedicineId, data);
+            document.getElementById('detail-name').innerText = data.name;
+            document.getElementById('detail-dose').innerText = data.dose;
+            document.getElementById('detail-brand').innerText = data.brand;
+            document.getElementById('detail-fda').innerText = data.fda;
+            document.getElementById('detail-type').innerText = data.type;
+            document.getElementById('detail-prop').innerText = data.prop;
+            alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+            backToDetailFromEdit();
+        }
+
+        function goToStockPage() {
+            const data = medicines[currentMedicineId];
+            document.getElementById('stock-name').innerText = data.name;
+            document.getElementById('stock-qty-display').innerText = data.qty;
+            document.getElementById('stock-unit-display').innerText = data.unit;
+            medicineDetailView.classList.add('hidden-page');
+            medicineStockView.classList.remove('hidden-page');
+        }
+
+        function backToDetailFromStock() {
+            medicineStockView.classList.add('hidden-page');
+            medicineDetailView.classList.remove('hidden-page');
+            showMedicineDetail(currentMedicineId);
+        }
+
+        function adjustStock(amount) {
+            const data = medicines[currentMedicineId];
+            if (data.qty + amount >= 0) {
+                data.qty += amount;
+                document.getElementById('stock-qty-display').innerText = data.qty;
+                updateDashboardCard(currentMedicineId, data);
+            }
+        }
+
+        function updateDashboardCard(id, data) {
+            const nameEl = document.getElementById(`dash-name-${id}`);
+            const doseEl = document.getElementById(`dash-dose-${id}`);
+            const qtyEl = document.getElementById(`dash-qty-${id}`);
+            const unitEl = document.getElementById(`dash-unit-${id}`);
+            if(nameEl) nameEl.innerText = data.name;
+            if(doseEl) doseEl.innerText = data.dose;
+            if(qtyEl) qtyEl.innerText = data.qty;
+            if(unitEl) {
+                let content = data.unit;
+                if(data.qty <= 10) content += ` <span class="text-red-500 font-bold">(ใกล้หมด)</span>`;
+                unitEl.innerHTML = content;
+            }
+        }
+
+        function initChart(borderColor) {
+            const ctx = document.getElementById('dispensingChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, hexToRgbA(borderColor, 0.5)); gradient.addColorStop(1, hexToRgbA(borderColor, 0.0));
+            myChart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ label: 'จำนวนการจ่าย', data: [], borderColor: borderColor, backgroundColor: gradient, borderWidth: 3, fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
+        }
+
+        function updateChart(timeframe) {
+            const data = medicines[currentMedicineId] ? medicines[currentMedicineId].stats[timeframe] : {labels:[], data:[]};
+            document.querySelectorAll('#medicine-detail-view button[id^="btn-"]').forEach(btn => { btn.classList.remove('tab-active', 'text-white'); btn.classList.add('text-gray-600', 'hover:bg-white/50'); });
+            document.getElementById(`btn-${timeframe}`).classList.add('tab-active');
+            if (myChart) { myChart.data.labels = data.labels; myChart.data.datasets[0].data = data.data; myChart.update(); }
+        }
+
+        function goToUserStats() {
+            adminView.classList.add('hidden-page');
+            adminStatsView.classList.remove('hidden-page');
+            initUserStatsChart();
+            updateUserStats('day');
+        }
+
+        function backToAdminProfile() {
+            adminStatsView.classList.add('hidden-page');
+            adminView.classList.remove('hidden-page');
+        }
+
+        function initUserStatsChart() {
+            const ctx = document.getElementById('userStatsChart').getContext('2d');
+            if (userStatsChart) userStatsChart.destroy();
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(37, 99, 235, 0.5)'); gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+            userStatsChart = new Chart(ctx, { type: 'bar', data: { labels: [], datasets: [{ label: 'จำนวนผู้เข้าใช้งาน', data: [], backgroundColor: gradient, borderColor: '#2563eb', borderWidth: 2, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
+        }
+
+        function updateUserStats(timeframe) {
+            const data = userStatsData[timeframe];
+            document.querySelectorAll('#admin-stats-view button[id^="btn-user-"]').forEach(btn => { btn.classList.remove('tab-active', 'text-white'); btn.classList.add('text-gray-600', 'hover:bg-white/50'); });
+            document.getElementById(`btn-user-${timeframe}`).classList.add('tab-active');
+            if (userStatsChart) { userStatsChart.data.labels = data.labels; userStatsChart.data.datasets[0].data = data.data; userStatsChart.update(); }
+        }
+
+        function hexToRgbA(hex, alpha){ if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ let c = hex.substring(1).split(''); if(c.length==3) c = [c[0], c[0], c[1], c[1], c[2], c[2]]; c = '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return 'rgba(13, 148, 136, '+alpha+')'; }
+    </script>
+</body>
+</html>
